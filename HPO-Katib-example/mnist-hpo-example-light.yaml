@@ -2,7 +2,7 @@ apiVersion: "kubeflow.org/v1alpha3"
 kind: Experiment
 metadata:
   namespace: kubeflow
-  name: jhs-vgg
+  name: jhs-2conv-mnist
 spec:
   parallelTrialCount: 3
   maxTrialCount: 12
@@ -13,6 +13,8 @@ spec:
     additionalMetricNames:
       - F1-score
       - accuracy
+      - precision
+      - recall
       - precision
   metricsCollectorSpec:
     collector:
@@ -33,7 +35,7 @@ spec:
       parameterType: int
       feasibleSpace:
         min: "3"
-        max: "5"
+        max: "30"
     - name: --dropout
       parameterType: double
       feasibleSpace:
