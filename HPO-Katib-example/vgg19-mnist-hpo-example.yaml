@@ -1,0 +1,72 @@
+apiVersion: "kubeflow.org/v1alpha3"
+kind: Experiment
+metadata:
+  namespace: kubeflow
+  name: jhs-vgg
+spec:
+  parallelTrialCount: 3
+  maxTrialCount: 12
+  maxFailedTrialCount: 1
+  objective:
+    type: maximize
+    objectiveMetricName: Validation-accuracy
+    additionalMetricNames:
+      - F1-score
+      - accuracy
+      - precision
+  metricsCollectorSpec:
+    collector:
+      kind: StdOut
+    source:
+      filter:
+        metricsFormat:
+        - "([\\w|-]+)\\s*=\\s*((-?\\d+)(\\.\\d+)?)"        
+  algorithm:
+    algorithmName: random    
+  parameters:
+    - name: --lr
+      parameterType: double
+      feasibleSpace:
+        min: "0.00001"
+        max: "0.0001"
+    - name: --epochs
+      parameterType: int
+      feasibleSpace:
+        min: "3"
+        max: "5"
+    - name: --dropout
+      parameterType: double
+      feasibleSpace:
+        min: "0.2"
+        max: "0.5"
+    - name: --optimizer
+      parameterType: categorical
+      feasibleSpace:
+        list:
+        - sgd
+        - adam
+        - rmsprop
+  trialTemplate:
+    goTemplate:
+      rawTemplate: |-
+        apiVersion: batch/v1
+        kind: Job
+        metadata:
+          name: {{.Trial}}
+          namespace: {{.NameSpace}}
+        spec:
+          template:
+            spec:
+              containers:
+              - name: {{.Trial}}
+                image: modenaf360/vgg19-mnist
+                imagePullPolicy: Always
+                command:
+                - "python3"
+                - "/opt/jhs_keras/CNN_MNIST_CUSTOM_VGG19.py"
+                {{- with .HyperParameters}}
+                {{- range .}}
+                - "{{.Name}}={{.Value}}"
+                {{- end}}
+                {{- end}}
+              restartPolicy: Never
