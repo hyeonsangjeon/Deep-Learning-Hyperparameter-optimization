@@ -2,20 +2,20 @@ apiVersion: "kubeflow.org/v1alpha3"
 kind: Experiment
 metadata:
   namespace: kubeflow
-  name: jhs-2conv-mnist
+  name: jhs-pp
 spec:
-  parallelTrialCount: 3
-  maxTrialCount: 12
+  parallelTrialCount: 5
+  maxTrialCount: 30
   maxFailedTrialCount: 1
   objective:
     type: maximize
+    goal: 0.99
     objectiveMetricName: Validation-accuracy
     additionalMetricNames:
       - F1-score
       - accuracy
       - precision
-      - recall
-      - precision
+      - recall      
   metricsCollectorSpec:
     collector:
       kind: StdOut
@@ -66,6 +66,7 @@ spec:
                 command:
                 - "python3"
                 - "/opt/jhs_keras/CNN_MNIST_Light.py"
+                - "--batch_size=30"
                 {{- with .HyperParameters}}
                 {{- range .}}
                 - "{{.Name}}={{.Value}}"
